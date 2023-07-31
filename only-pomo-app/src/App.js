@@ -12,24 +12,51 @@ function App() {
   const [secsFromInitialStart, setSecsFromInitialStart] = useState(0)
   // clock is the interval id
   const [ clock, setClock ] = useState()
+  // set the break timer
+  const [ breakTime ] = useState(5)
+  // to check if the timer is pause or not
+  const [ isBreak, setIsBreak ] = useState(false)
+
+  let mins
+  let secs
+  let current
 
   const startClockFn = () => {
+
     const start = new Date()
-    setClock(setInterval(() => {
-      let current
-      // manipulate the timer each second
-      // subtract the starting time from a new Date object
-      // and we convert from milliseconds to a single-digit number.
-      current = Number(((new Date() - start) / 1000).toFixed())
-      // To keep track of the seconds passed from the start till now
-      setSecsFromInitialStart(current)
-      current = totalTime - current
-      // convert 0 minutes in 00 or 01 same for seconds
-      let mins = (current / 60).toString().split(".")[0].padStart(2, "0")
-      let secs = (current % 60).toString().padStart(2, "0")
-      setDisplay(`${mins}:${secs}`)
-    }, 1000))
+
+    if (isBreak) {
+      setClock(setInterval(() => {
+        current = Number(((new Date() - start) / 1000).toFixed())
+        setSecsFromInitialStart(current)
+        current = breakTime - current
+        mins = (current / 60).toString().split(".")[0].padStart(2, "0")
+        secs = (current % 60).toString().padStart(2, "0")
+        setDisplay(`${mins}:${secs}`);
+        console.log('break timer runs')
+      }, 1000))
+      
+    } else {
+
+      setClock(setInterval(() => {
+        // manipulate the timer each second
+        // subtract the starting time from a new Date object
+        // and we convert from milliseconds to a single-digit number.
+        current = Number(((new Date() - start) / 1000).toFixed())
+        // To keep track of the seconds passed from the start till now
+        setSecsFromInitialStart(current)
+        current = totalTime - current
+        // convert 0 minutes in 00 or 01 same for seconds
+        mins = (current / 60).toString().split(".")[0].padStart(2, "0")
+        secs = (current % 60).toString().padStart(2, "0")
+        setDisplay(`${mins}:${secs}`)
+      }, 1000))
+      
+      console.log(isBreak)
+    }
+
   }
+
   const pauseClockFn = () => {
     clearInterval(clock)
   }
@@ -37,13 +64,20 @@ function App() {
   // stop the timer when reaches 00:00
   const stopClockFn = () => {
     clearInterval(clock)
+    setIsBreak(true)
+    setSecsFromInitialStart(current)
+    mins = (breakTime / 60).toString().split(".")[0].padStart(2, "0")
+    secs = (breakTime % 60).toString().padStart(2, "0")
+    setDisplay(`${mins}:${secs}`);
+    // after this play sound alert and set a new timer for the break
   }
 
   useEffect(() => {
-    if(Number(secsFromInitialStart) === Number(totalTime)) {
+    if(Number(secsFromInitialStart) === Number(totalTime) ) {
       stopClockFn()
     }
-  }, [secsFromInitialStart])
+  }, [secsFromInitialStart, totalTime])
+
 
   return (
     <div className='main'>
