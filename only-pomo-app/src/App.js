@@ -17,74 +17,69 @@ function App() {
   // to check if the timer is pause or not
   const [ isBreak, setIsBreak ] = useState(false)
 
-  let mins
-  let secs
-  let current
-
   const startClockFn = () => {
 
     const start = new Date()
 
     if (isBreak) {
-      setClock(setInterval(() => {
-        current = Number(((new Date() - start) / 1000).toFixed())
-        setSecsFromInitialStart(current)
-        current = breakTime - current
-        mins = (current / 60).toString().split(".")[0].padStart(2, "0")
-        secs = (current % 60).toString().padStart(2, "0")
-        setDisplay(`${mins}:${secs}`);
-        console.log('break timer runs')
-      }, 1000))
-      
+      setClock(
+        setInterval(() => {
+          const current = Number(((new Date() - start) / 1000).toFixed());
+          setSecsFromInitialStart(prevSecs => prevSecs + 1);
+          const remainingTime = breakTime - current;
+          if (remainingTime <= 0) {
+            clearInterval(clock);
+            setIsBreak(false);
+            setDisplay(`${Math.floor(totalTime / 60).toString().padStart(2, '0')}:${(totalTime % 60).toString().padStart(2, '0')}`);
+            // Play sound alert and handle resuming the main timer
+          } else {
+            const mins = Math.floor(remainingTime / 60).toString().padStart(2, '0');
+            const secs = (remainingTime % 60).toString().padStart(2, '0');
+            setDisplay(`${mins}:${secs}`);
+          }
+        }, 1000)
+      );
     } else {
-
-      setClock(setInterval(() => {
-        // manipulate the timer each second
-        // subtract the starting time from a new Date object
-        // and we convert from milliseconds to a single-digit number.
-        current = Number(((new Date() - start) / 1000).toFixed())
-        // To keep track of the seconds passed from the start till now
-        setSecsFromInitialStart(current)
-        current = totalTime - current
-        // convert 0 minutes in 00 or 01 same for seconds
-        mins = (current / 60).toString().split(".")[0].padStart(2, "0")
-        secs = (current % 60).toString().padStart(2, "0")
-        setDisplay(`${mins}:${secs}`)
-      }, 1000))
-      
-      console.log(isBreak)
+      setClock(
+        setInterval(() => {
+          const current = Number(((new Date() - start) / 1000).toFixed());
+          setSecsFromInitialStart(prevSecs => prevSecs + 1);
+          const remainingTime = totalTime - current;
+          if (remainingTime <= 0) {
+            clearInterval(clock);
+            setIsBreak(true);
+            setDisplay(`${Math.floor(breakTime / 60).toString().padStart(2, '0')}:${(breakTime % 60).toString().padStart(2, '0')}`);
+            // Play sound alert and handle resuming the break timer
+          } else {
+            const mins = Math.floor(remainingTime / 60).toString().padStart(2, '0');
+            const secs = (remainingTime % 60).toString().padStart(2, '0');
+            setDisplay(`${mins}:${secs}`);
+          }
+        }, 1000)
+      );
     }
-
-  }
+  };
 
   const pauseClockFn = () => {
-    clearInterval(clock)
-  }
-
-  // stop the timer when reaches 00:00
-  const stopClockFn = () => {
-    clearInterval(clock)
-    setIsBreak(true)
-    setSecsFromInitialStart(current)
-    mins = (breakTime / 60).toString().split(".")[0].padStart(2, "0")
-    secs = (breakTime % 60).toString().padStart(2, "0")
-    setDisplay(`${mins}:${secs}`);
-    // after this play sound alert and set a new timer for the break
-  }
+    clearInterval(clock);
+  };
 
   useEffect(() => {
-    if(Number(secsFromInitialStart) === Number(totalTime) ) {
-      stopClockFn()
-    }
-  }, [secsFromInitialStart, totalTime])
+    return () => {
+      clearInterval(clock);
+    };
+  }, [clock]);
 
+  // TODO: make a counter that counts pomodoros
+  // TODO: after 3 pomos, there is a long break
 
   return (
     <div className='main'>
-      <div className='btns-container'>
-        <div className='timers-container'>
-          <p>i am a timer</p>
+      <div className='center-layout'>
+        <div className='timer-container'>
           <h1>{display}</h1>
+          <p>#1</p>
+          <p>something...</p>
           <button onClick={startClockFn}>Start</button>
           <button onClick={pauseClockFn}>Pause</button>
         </div>
